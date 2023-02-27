@@ -10,10 +10,10 @@ import { fileURLToPath } from 'url'
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 4000
 const server = http.createServer()
-const url = 'https://static.videezy.com/system/resources/previews/000/000/161/original/Volume2.mp4'
+const url = 'https://www.holochain.org/img/big_logo-2x.webp'
+const path = Path.resolve(__dirname, Path.basename(url))
 
 async function download() {
-  const path = Path.resolve(__dirname, `_${Path.extname(url)}`)
   const response = await Axios({
     method: 'GET',
     url: url,
@@ -32,13 +32,15 @@ async function download() {
 }
 
 async function downloadImage () {
-  try {
-    const stats = Fs.statSync(`./_${Path.extname(url)}`);
+  if(Fs.existsSync(Path.basename(url))) {
+    const stats = Fs.statSync(`./${Path.basename(url)}`);
     const localSize = stats.size
     const remoteSize = await ufs(url)
     if(localSize !== remoteSize) await download()
-    else console.log("❌ Same file exists")
-  } catch(e) { await download() }
+    else console.log("❌ Already up to date")
+  } else {
+    await download()
+  }
 }
 
 server.listen(PORT, async (err) => {
